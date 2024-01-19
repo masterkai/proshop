@@ -5,13 +5,29 @@ import "./assets/styles/bootstrap.custom.css";
 import "./assets/styles/index.css";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from "react-router-dom";
+import { HomeScreen } from "./screen/HomeScreen";
+import { ProductScreen } from "./screen/ProductScreen";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/" element={<App />}>
+      <Route index path="/" element={<HomeScreen />} />
+      <Route path="/product/:id" element={<ProductScreen />} />
+    </Route>
+  )
+);
 root.render(
   <React.StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 
