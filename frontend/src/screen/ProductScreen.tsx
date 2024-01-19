@@ -1,13 +1,31 @@
 import { Link, useParams } from "react-router-dom";
-import products from "../products";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import { Button, Card, Image, ListGroup } from "react-bootstrap";
 import Rating from "../components/Rating";
+import { useImmer } from "use-immer";
+import { useEffect } from "react";
+import axios from "axios";
 
 export const ProductScreen = () => {
+  const [product, setProduct] = useImmer({
+    image: "",
+    name: "",
+    rating: undefined,
+    numReviews: undefined,
+    price: undefined,
+    description: "",
+    countInStock: undefined,
+  });
   const { id: productID } = useParams();
-  const product = products.find((p) => p._id === productID);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const { data } = await axios.get(`/api/products/${productID}`);
+      return data;
+    };
+    fetchProduct().then((data) => setProduct(data));
+  }, []);
   console.log(product);
   return (
     <>

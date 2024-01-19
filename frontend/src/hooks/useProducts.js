@@ -5,7 +5,7 @@ import productsService from "../server/productsService";
 const useProducts = () =>
   useQuery({
     queryKey: CACHE_KEY_PRODUCTS,
-    queryFn: productsService.get,
+    queryFn: productsService.getAll,
     staleTime: 1000,
   });
 
