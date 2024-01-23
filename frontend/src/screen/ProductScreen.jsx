@@ -1,37 +1,30 @@
 import { Link, useParams } from "react-router-dom";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { Button, Card, Image, ListGroup } from "react-bootstrap";
+import { Button, Card, Form, Image, ListGroup } from "react-bootstrap";
 import Rating from "../components/Rating";
+import { useGetProductDetailQuery } from "../slices/productsApiSlice";
+import Loader from "../components/Loader";
+import Message from "../components/Message";
 import { useImmer } from "use-immer";
-import { useEffect } from "react";
-import axios from "axios";
+import { addToCart } from "../slices/cartSlice";
+import { useDispatch } from "react-redux";
 
 export const ProductScreen = () => {
-  const [product, setProduct] = useImmer({
-    image: "",
-    name: "",
-    rating: undefined,
-    numReviews: undefined,
-    price: undefined,
-    description: "",
-    countInStock: undefined,
-  });
+  const [qty, setQty] = useImmer(1);
   const { id: productID } = useParams();
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    const fetchProduct = async () => {
-      const { data } = await axios.get(`/api/products/${productID}`);
-      return data;
-    };
-    fetchProduct().then((data) => setProduct(data));
-  }, []);
+  const {
+    data: product,
+    isLoading,
+    isError,
+  } = useGetProductDetailQuery(productID);
   console.log(product);
-  return (
+  const dispatch = useDispatch();
+  const addToCartHandler = () => {
+    dispatch(addToCart({ ...product, qty }));
+  };
+  const Product = (
     <>
-      <Link className="btn btn-light my-3" to="/">
-        Go Back
-      </Link>
       <Row>
         <Col md={5}>
           <Image src={product?.image} alt={product?.name} fluid />
@@ -74,12 +67,33 @@ export const ProductScreen = () => {
                   </Col>
                 </Row>
               </ListGroup.Item>
+              {product?.countInStock > 0 && (
+                <ListGroup.Item>
+                  <Row>
+                    <Col>Qty</Col>
+                    <Col>
+                      <Form.Control
+                        as="select"
+                        value={qty}
+                        onChange={(e) => setQty(Number(e.target.value))}
+                      >
+                        {[...Array(product.countInStock).keys()].map((x) => (
+                          <option value={x + 1} key={x + 1}>
+                            {x + 1}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Col>
+                  </Row>
+                </ListGroup.Item>
+              )}
               <ListGroup.Item>
                 <div className="d-grid">
                   <Button
                     type="button"
                     className="btn-block"
                     disabled={product?.countInStock === 0}
+                    onClick={addToCartHandler}
                   >
                     Add to Cart
                   </Button>
@@ -89,6 +103,20 @@ export const ProductScreen = () => {
           </Card>
         </Col>
       </Row>
+    </>
+  );
+  return (
+    <>
+      <Link className="btn btn-light my-3" to="/">
+        Go Back
+      </Link>
+      {isLoading ? (
+        <Loader />
+      ) : isError ? (
+        <Message variant={"danger"}>something goes wrong</Message>
+      ) : (
+        Product
+      )}
     </>
   );
 };
