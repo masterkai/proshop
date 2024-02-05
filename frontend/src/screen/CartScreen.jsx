@@ -5,7 +5,7 @@ import Col from "react-bootstrap/Col";
 import Message from "../components/Message";
 import { Button, Form, Image, ListGroup } from "react-bootstrap";
 import { FaTrash } from "react-icons/fa";
-import { addToCart } from "../slices/cartSlice";
+import { addToCart, removeFromCart } from "../slices/cartSlice";
 
 const CartScreen = () => {
   const navigate = useNavigate();
@@ -13,6 +13,12 @@ const CartScreen = () => {
   const { cartItems } = useSelector((state) => state.cart);
   const addToCartHandler = async (product, qty) => {
     dispatch(addToCart({ ...product, qty }));
+  };
+  const removeFromCartHandler = async (id) => {
+    dispatch(removeFromCart(id));
+  };
+  const checkoutHandler = () => {
+    navigate("/login?redirect=shipping");
   };
   const subtotal = cartItems.reduce((acc, item) => acc + Number(item.qty), 0);
   console.log({ subtotal });
@@ -58,7 +64,11 @@ const CartScreen = () => {
                     </Form.Control>
                   </Col>
                   <Col md={2}>
-                    <Button type={"button"} variant={"light"}>
+                    <Button
+                      onClick={() => removeFromCartHandler(item._id)}
+                      type={"button"}
+                      variant={"light"}
+                    >
                       <FaTrash />
                     </Button>
                   </Col>
@@ -81,7 +91,7 @@ const CartScreen = () => {
               type={"button"}
               className={"btn-block"}
               disabled={cartItems.length === 0}
-              onClick={() => navigate("/login")}
+              onClick={checkoutHandler}
             >
               Proceed To Checkout
             </Button>
